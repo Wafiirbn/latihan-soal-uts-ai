@@ -1421,3 +1421,9 @@
 .tr-sel td{background:var(--ok-bg);font-weight:700}.tr-tie td{background:var(--gold-soft)}
 .trs{margin:10px 0;padding:10px 12px;border-left:3px solid var(--blue);background:var(--card-alt);border-radius:6px;font-size:.88rem;line-height:1.6}.trs .h{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--blue);margin-bottom:4px}
 .row button:disabled{opacity:.45;cursor:not-allowed}
+
+.gviz{margin:10px 0}.gviz svg{display:block;width:100%;max-width:440px;margin:0 auto;color:var(--ink3)}.gviz line{stroke:currentColor;stroke-width:1.5}
+.gviz circle{fill:var(--card);stroke:currentColor;stroke-width:1.5}.gviz circle.cl{fill:var(--blue-soft)}.gviz circle.cu{stroke:var(--ok);stroke-width:3.5}
+.gw{font-size:12px;font-weight:800;fill:var(--ink);text-anchor:middle}.gl{font-size:14px;font-weight:800;fill:var(--ink);text-anchor:middle}.gh{font-size:10px;fill:var(--ink3);text-anchor:middle}
+.gleg{margin-top:6px;font-size:.8rem;color:var(--ink3);line-height:1.5;text-align:center}
+.rl{margin:6px 0 10px;font-size:.84rem;color:var(--ink3)}.rl summary{cursor:pointer;font-weight:700}.rl ul{margin:6px 0 0 18px;line-height:1.6}
