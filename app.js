@@ -926,6 +926,16 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
   }
   window.__trSim = trSim; /* dipakai untuk pengujian */
 
+  const POS = { g1: { S: [45, 85], A: [170, 35], B: [170, 135], G: [295, 85] }, g3: { S: [45, 85], A: [170, 35], B: [170, 135], G: [295, 85] }, g2: { S: [40, 85], A: [135, 35], B: [135, 135], C: [230, 135], G: [320, 85] } };
+  function gSvg(gk, cur, closed) {
+    const g = TG[gk], P = POS[gk], R = 21; let e = "", nd = "";
+    Object.entries(g.E).forEach(([a, l]) => l.forEach(([b, w]) => {
+      const [x1, y1] = P[a], [x2, y2] = P[b], L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L;
+      e += `<line x1="${x1 + ux * R}" y1="${y1 + uy * R}" x2="${x2 - ux * (R + 4)}" y2="${y2 - uy * (R + 4)}" marker-end="url(#ar)"/><text class="gw" x="${(x1 + x2) / 2 - uy * 12}" y="${(y1 + y2) / 2 + ux * 12 + 4}">${w}</text>`;
+    }));
+    Object.keys(P).forEach(k => { const [x, y] = P[k]; nd += `<circle cx="${x}" cy="${y}" r="${R}" class="${closed.includes(k) ? "cl" : ""} ${cur === k ? "cu" : ""}"/><text class="gl" x="${x}" y="${y - 2}">${k}</text><text class="gh" x="${x}" y="${y + 12}">h=${g.H[k]}</text>`; });
+    return `<svg viewBox="0 0 360 170" role="img" aria-label="Graf pencarian"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>${e}${nd}</svg>`;
+  }
   window.trace = function () {
     run = null; dock(""); closeModal();
     const st = trSim(TR.g, TR.a), N = st.length, i = Math.min(TR.i, N);
@@ -935,6 +945,7 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
     const hs = Object.entries(g.H).map(([k, v]) => `h(${k})=${v}`).join(", ");
     const tbl = s => `<table><tr><th>Path di frontier</th><th>g</th><th>h</th><th>${KL[TR.a]}</th><th>Masuk ke-</th></tr>${s.before.map(r => `<tr class="${r.q === s.chq ? "tr-sel" : s.tiedq.includes(r.q) ? "tr-tie" : ""}"><td>${r.p}</td><td>${r.g}</td><td>${r.h}</td><td>${r.v}</td><td>${r.q}</td></tr>`).join("")}</table>`;
     const box = (t, h) => `<div class="trs"><b class="h">${t}</b>${h}</div>`;
+    const cs = i > 0 ? st[i - 1] : null, cur = cs && !cs.skipped ? cs.nm : null, clo = cs ? cs.closed : [];
     let body;
     if (i === 0) body = box("Kondisi awal", "Frontier berisi S (g=0). Belum ada node yang diperluas. Tekan Berikutnya untuk memulai.");
     else {
@@ -948,7 +959,8 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
     $("app").innerHTML = head + `<div class="qbox vz"><p class="qhint">${ic("info", 13)} Pilih graf dan algoritme, lalu telusuri satu langkah per satu langkah.</p>
       <div class="row">${Object.keys(TG).map(k => `<button class="${TR.g === k ? "on" : ""}" onclick="TRset('g','${k}')">${TG[k].n}</button>`).join("")}</div>
       <div class="row">${["BFS", "DFS", "UCS", "Greedy", "A*"].map(a => `<button class="${TR.a === a ? "on" : ""}" onclick="TRset('a','${a}')">${a}</button>`).join("")}</div>
-      <div class="note">Busur: ${edges}. Heuristik: ${hs}. Start S, goal G. Successor dimasukkan urut alfabetis. Seri: node yang lebih dulu masuk frontier. State yang sudah diperluas tidak diperluas lagi.</div>
+      <div class="gviz">${gSvg(TR.g, cur, clo)}<p class="gleg">Lingkaran = state (angka <b>h</b> = estimasi ke goal). Angka di busur = biaya. Biru = sudah diperluas, tepi hijau = sedang dipilih.</p></div>
+      <details class="rl"><summary>Aturan simulasi</summary><ul><li>Start S, goal G.</li><li>Successor dimasukkan urut alfabetis.</li><li>Kalau seri, pilih node yang lebih dulu masuk frontier.</li><li>State yang sudah diperluas tidak diperluas lagi.</li></ul></details>
       <p class="qnum" style="margin:8px 0">Langkah ${i} dari ${N}</p>${body}
       <div class="row"><button onclick="TRgo(-1)" ${i <= 0 ? "disabled" : ""}>Mundur</button><button class="${i >= N ? "" : "on"}" ${i >= N ? "disabled" : ""} onclick="TRgo(1)">${i >= N ? "Selesai ✓" : "Berikutnya"}</button><button onclick="TR_i(0)">Ulang</button><button onclick="TR_i(${N})">Ke hasil</button></div></div>`;
     window.scrollTo(0, 0);
