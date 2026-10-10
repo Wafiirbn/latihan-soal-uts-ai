@@ -1424,6 +1424,10 @@
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r-full);border:1px solid var(--blue-border);background:var(--card);color:var(--blue);font-weight:600;font-size:.82rem}.chip:hover{background:var(--blue-soft)}
 .vdone{margin:10px 0;padding:10px 12px;border-radius:8px;background:var(--ok-bg);border:1px solid var(--ok-line);color:var(--ok-ink);font-weight:600;font-size:.88rem}.vz .row button:disabled{opacity:.6}
 .fobj{display:grid;gap:8px;margin:6px 0 14px}.fo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.fo b{width:48px}.tg{padding:7px 12px;border-radius:8px;border:1px solid var(--line2);background:var(--card-alt);color:var(--ink3);font-weight:600;font-size:.82rem}.tg.y{background:var(--ok-bg);border-color:var(--ok-line);color:var(--ok-ink)}
+  .tools3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}@media(max-width:620px){.tools3{grid-template-columns:1fr}}
+.tc{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:16px;border-radius:var(--r-lg);border:1px solid var(--blue-border);background:var(--card);color:var(--ink);box-shadow:var(--sh2);transition:.15s}.tc:hover{transform:translateY(-2px);border-color:var(--blue);box-shadow:var(--sh3)}
+.tc b{font-size:.95rem}.tc small{color:var(--ink3);font-size:.78rem;line-height:1.4}.tc-ic{width:42px;height:42px;border-radius:12px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.uts-cta{background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--gold-border);border-left:5px solid var(--gold);border-bottom:1px solid var(--gold-border)!important}.uts-d{opacity:1!important;color:var(--ink3)}
   </style>
 </head>
 
@@ -1585,7 +1589,13 @@ const GUIDE = {"1": [["Empat pendekatan AI: peta 2×2", "Bayangkan tabel: baris 
     </div>
   </div>
   <div class="uts-cta"><div><div class="uts-t">Simulasi UTS</div><div class="uts-d">60 menit · soal campuran dari semua bab · timer jalan</div></div><button class="btn-go" onclick="startUTS()">Mulai ${ic("arrow", 14)}</button></div>
-  <div class="chips"><button class="chip" onclick="cheat()">${ic("list", 14)} Cheat sheet rumus</button><button class="chip" onclick="viz()">${ic("grid", 14)} Visualisasi interaktif</button><button class="chip" onclick="wbCards()">${ic("refresh", 14)} Flashcard soal salah (${(S.wb || []).length})</button></div>
+  <div class="sec-title" style="margin:22px 0 10px">Alat bantu belajar</div>
+  <div class="tools3">
+    <button class="tc" onclick="cheat()"><span class="tc-ic">${ic("list", 22)}</span><b>Cheat sheet rumus</b><small>Rumus, ekuivalensi, truth table</small></button>
+    <button class="tc" onclick="viz()"><span class="tc-ic">${ic("grid", 22)}</span><b>Visualisasi interaktif</b><small>Simulasi search dan ∀ vs ∃</small></button>
+    <button class="tc" onclick="wbCards()"><span class="tc-ic">${ic("refresh", 22)}</span><b>Flashcard soal salah</b><small>${(S.wb || []).length} kartu untuk diulang</small></button>
+  </div>
+  <div style="height:14px"></div>
   <div class="sec-hdr">
     <div class="sec-title">Pilih bab untuk dilatih</div>
     ${done ? `<button class="rst" onclick="resetAll()">Reset Riwayat</button>` : ""}
