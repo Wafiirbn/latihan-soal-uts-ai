@@ -635,6 +635,7 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
     6: { t: [["Sound", "Hanya menurunkan yang ter-entail", "Tidak 'berbohong'"], ["Complete", "Dapat menurunkan semua yang ter-entail", "Tidak ada yang terlewat"], ["Valid", "Benar di semua model", "Satisfiable: benar di minimal satu"], ["Unsatisfiable", "Tidak benar di model mana pun", "Dasar pembuktian KB ∧ ¬α"]], a: ["Daftar simbol dan hitung 2^n model.", "Evaluasi KB di tiap model.", "Cek α di model yang membuat KB benar."], e: ["P⇒Q salah hanya saat P benar dan Q salah.", "Modus ponens menyimpulkan Q, bukan ¬Q.", "Truth table 3 simbol = 8 baris."] },
     7: { t: [["∀ dengan ⇒", "Semua yang memenuhi syarat", "∀ dengan ∧ berarti semua objek"], ["∃ dengan ∧", "Ada satu yang memenuhi keduanya", "∃ dengan ⇒ benar trivial"], ["Fungsi", "Memetakan objek ke objek, mis. Ibu(x)", "Predikat hasilnya benar/salah"], ["∃x∀y vs ∀y∃x", "Urutan quantifier campuran penting", "∀∀ dan ∃∃ boleh ditukar"]], a: ["Tentukan quantifier dari kata kunci (semua/ada).", "Pasangkan: ∀⇒, ∃∧.", "Uji di dunia kecil, termasuk objek non-mahasiswa."], e: ["Jangan pakai ∃ dengan ⇒.", "Jangan pakai ∀ dengan ∧.", "Cek kasus dunia tanpa objek yang disebut."] }
   };
+  window.RS = R;
   const os = window.study;
   window.study = function (n, tab) {
     os(n, tab);
@@ -759,3 +760,240 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
   home();
 })();
 
+
+/* ===== AUDIT SOAL, PENELUSURAN ALGORITME, RANGKUMAN TERSTRUKTUR ===== */
+(function () {
+  const D = DATA;
+
+  /* --- A. Audit Benar/Salah: pembahasan lengkap --- */
+  const TFX = {
+    "1.3": "Benar. Revolusi kognitif 1960-an memandang otak sebagai pemroses informasi, dari sinilah cognitive psychology lahir.",
+    "1.4": "Benar. Prediksi Turing: pada tahun 2000 mesin punya peluang 30% mengelabui penguji awam selama 5 menit.",
+    "1.5": "Benar. AlphaGo mengalahkan Ke Jie pada Mei 2017, tonggak AI di permainan Go.",
+    "1.6": "Salah. Itu contoh bias: model belajar pola timpang dari data rekrutmen lama. Privasi menyangkut data pribadi tanpa persetujuan (kasus Lensa AI).",
+    "1.7": "Benar. UNESCO (stakeholder antarpemerintah) mengadopsi kesepakatan global etika AI pada November 2021.",
+    "1.9": "Benar. Brain imaging mengamati aktivitas otak saat bekerja; ini salah satu cara mempelajari cara manusia berpikir (thinking humanly).",
+    "1.10": "Benar. Aristoteles mengkaji argumen dan proses berpikir yang benar, dasar pendekatan thinking rationally (laws of thought).",
+    "2.0": "Benar. PEAS = Performance measure, Environment, Actuators, Sensors; dipakai untuk menggambarkan masalah agen.",
+    "2.1": "Benar. Deterministik: tanpa unsur acak, state berikutnya ditentukan penuh oleh state sekarang dan aksi. Lawannya stochastic.",
+    "2.3": "Benar. Itulah definisi agent: sensor untuk mempersepsi, actuator untuk bertindak.",
+    "2.4": "Benar. Agent function memetakan seluruh riwayat persepsi (P*) ke aksi (A); ini pemetaan abstrak.",
+    "2.5": "Benar. Agent program adalah kode konkret yang berjalan di physical architecture untuk mewujudkan agent function.",
+    "2.7": "Benar. Empat penentu rasionalitas: performance measure, pengetahuan awal, aksi yang mungkin, percept sequence.",
+    "2.9": "Benar. Episodic: tiap episode lepas dari episode lain. Lawannya sequential, saat keputusan sekarang memengaruhi berikutnya.",
+    "2.10": "Benar. Semidynamic: dunia tidak berubah seiring waktu, tetapi skor kinerja agen ikut berubah.",
+    "2.12": "Salah. Rem dan kemudi menggerakkan taksi, jadi itu actuator. Sensor yang mempersepsi, mis. kamera dan GPS.",
+    "2.13": "Benar. Model-based reflex agent menyimpan state internal untuk bagian dunia yang tak teramati; simple reflex tidak.",
+    "2.14": "Benar. Kata 'happy' dianggap kurang ilmiah, maka dipakai istilah utility untuk ukuran kepuasan agen.",
+    "2.15": "Benar. Contoh performance measure vacuum: jumlah kotak bersih pada tiap time step.",
+    "3.2": "Benar. UCS memakai priority queue; node dengan biaya kumulatif g(n) terkecil keluar lebih dulu.",
+    "3.4": "Benar. Planning agent perlu model bagaimana dunia berubah akibat aksi, dan goal test untuk mengenali tujuan.",
+    "3.5": "Benar. Empat komponen search problem: state space, successor function, start state, goal test.",
+    "3.6": "Benar. Solusi berupa plan, yaitu rangkaian aksi dari start state sampai goal.",
+    "3.8": "Benar. Satu node search tree mewakili seluruh path dari start, sehingga satu state bisa muncul berkali-kali.",
+    "3.11": "Benar. BFS memperluas level demi level; solusi terdangkal di kedalaman s butuh waktu O(b^s).",
+    "3.12": "Benar. Syaratnya biaya busur minimum positif dan biaya solusi berhingga; tanpa itu UCS bisa tidak selesai.",
+    "3.13": "Benar. Level terdalam punya node paling banyak, jadi pengulangan level atas relatif murah.",
+    "3.14": "Benar. Mencoba semua plan di dunia nyata berbahaya; agen mensimulasikannya di model dunia.",
+    "3.17": "Benar. UCS meluas membentuk kontur biaya yang makin besar, ke segala arah dari start.",
+    "3.18": "Benar. Algoritma search berbeda hanya pada strategi memilih node dari fringe (queue, stack, priority queue).",
+    "4.0": "Benar. A* menjumlahkan g(n) (biaya dari start) dan h(n) (estimasi ke goal).",
+    "4.3": "Benar. Heuristik h(n) mengestimasi kedekatan ke goal dan dirancang khusus untuk tiap masalah.",
+    "4.4": "Benar. Pada pathing, jarak Manhattan atau Euclidean ke goal dipakai sebagai heuristik.",
+    "4.6": "Benar. UCS memakai backward cost g(n); greedy memakai forward cost h(n).",
+    "4.11": "Benar. UCS tidak tahu letak goal sehingga meluas ke segala arah; heuristik mengarahkan A* ke goal.",
+    "4.13": "Benar. Greedy mengurutkan hanya dengan h(n), tanpa memperhitungkan biaya yang sudah ditempuh.",
+    "4.15": "Benar. A* menggabungkan UCS (g) dan greedy (h): f(n) = g(n) + h(n).",
+    "4.16": "Benar. Di goal sisa biaya sebenarnya 0, jadi h(goal) > 0 sudah overestimate. Admissible mensyaratkan h(goal)=0.",
+    "5.3": "Benar. CSP adalah search problem khusus: state = assignment sebagian, goal test = semua constraint terpenuhi.",
+    "5.4": "Benar. State CSP = assignment variabel Xi dengan nilai dari domain D; goal test berupa himpunan constraint.",
+    "5.5": "Benar. CSP termasuk identification problem: yang dicari assignment akhir, bukan urutan langkahnya.",
+    "5.7": "Benar. Unary constraint (mis. SA ≠ hijau) cukup menghapus nilai dari domain variabel itu.",
+    "5.8": "Benar. Constraint graph biner: node = variabel, busur = constraint antara dua variabel.",
+    "5.10": "Benar. Backtracking = DFS + satu variabel per langkah + mundur saat constraint dilanggar.",
+    "5.12": "Salah. Bila domain X mengecil, nilai pada tetangga yang bergantung pada X bisa kehilangan pasangan, sehingga arc menuju X harus dicek ulang.",
+    "5.13": "Benar. LCV memilih nilai yang paling sedikit menutup pilihan variabel lain, agar peluang menemukan solusi tetap besar.",
+    "5.14": "Benar. SAT adalah CSP berdomain terbatas (benar/salah) yang NP-complete.",
+    "5.16": "Benar. Arc consistency bisa dijalankan sebelum search untuk menyempitkan domain (preprocessor).",
+    "5.18": "Benar. Tiap dari 4 kolom punya 4 pilihan baris: 4×4×4×4 = 4⁴ = 256 (rumus d^n).",
+    "6.0": "Benar. Implikasi hanya salah pada baris P=T, Q=F; bila P salah, implikasi selalu benar.",
+    "6.1": "Benar. Kalimat valid benar di semua model; contohnya A ∨ ¬A.",
+    "6.3": "Benar. Knowledge base adalah himpunan kalimat dalam bahasa formal.",
+    "6.4": "Benar. Pendekatan deklaratif: agen di-Tell pengetahuan, lalu di-Ask apa yang harus dilakukan.",
+    "6.6": "Benar. Wumpus world: deterministic, static, discrete, single-agent, sequential, tetapi partially observable.",
+    "6.7": "Benar. Glitter dirasakan jika dan hanya jika emas ada di kotak yang sama dengan agen.",
+    "6.8": "Benar. Entailment: α benar di semua model tempat KB benar, sehingga M(KB) ⊆ M(α).",
+    "6.9": "Benar. Sound: prosedur tidak 'berbohong', semua yang diturunkan memang di-entail KB.",
+    "6.11": "Benar. Dasar pembuktian dengan kontradiksi: jika KB ∧ ¬α mustahil dipenuhi, α pasti mengikuti KB.",
+    "6.12": "Benar. Deduction theorem menghubungkan entailment dengan validitas implikasi KB ⇒ α.",
+    "6.13": "Benar. Truth table punya 2^n baris untuk n simbol, tumbuh eksponensial.",
+    "6.15": "Benar. Knowledge level: apa yang diketahui agen; implementation level: bagaimana disimpan dan dihitung.",
+    "6.16": "Benar. A ∨ ¬A selalu benar karena salah satu sisinya pasti benar.",
+    "6.17": "Benar. Bikondisional setara dua implikasi bolak-balik: (S1 ⇒ S2) ∧ (S2 ⇒ S1).",
+    "6.18": "Salah. 3 simbol memberi 2³ = 8 baris, bukan 6.",
+    "6.19": "Benar. P=T dan Q=F adalah satu-satunya kasus yang membuat implikasi salah.",
+    "6.20": "Salah. Dengan P=T, Q=F: ¬P ∨ Q = F ∨ F = salah (setara dengan P ⇒ Q yang juga salah).",
+    "6.21": "Benar. ¬P1,2 = T dan (P2,2 ∨ P3,1) = T ∨ F = T, jadi T ∧ T = T.",
+    "6.22": "Benar. Itulah modus ponens; benar di semua model sehingga valid.",
+    "7.2": "Benar. Objek, relasi, dan quantifier membuat satu kalimat FOL mewakili banyak kalimat propositional.",
+    "7.3": "Benar. Propositional logic hanya punya simbol fakta benar/salah, tanpa objek atau variabel.",
+    "7.4": "Benar. Variabel FOL merujuk objek di dunia dan dapat dikuantifikasi dengan ∀ atau ∃.",
+    "7.5": "Benar. Term = constant (Budi), variable (x), atau function symbol (Ibu(Budi)).",
+    "7.7": "Benar. Predikat diterapkan pada term, mis. Saudara(a,b), membentuk kalimat atomik.",
+    "7.10": "Benar. Quantifier sejenis boleh ditukar urutannya; quantifier campuran (∃∀ vs ∀∃) tidak.",
+    "7.13": "Benar. Sepupu: orang tua x dan orang tua y bersaudara.",
+    "7.14": "Benar. Constant symbol menunjuk satu objek tertentu: Fred, Japan, Bacterium39.",
+    "7.15": "Benar. Variabel adalah placeholder yang dapat dikuantifikasi: x, y, a.",
+    "7.16": "Benar. ∀ berpasangan dengan ⇒ ('semua yang memenuhi syarat ...'); ∃ berpasangan dengan ∧.",
+    "7.17": "Benar. Dibanding propositional logic, FOL menambahkan objects dan relations.",
+    "7.19": "Benar (rumusnya memang bernilai salah). ∀ dengan ∧ menuntut semua objek mahasiswa sekaligus Genius, sedangkan Cici bukan mahasiswa."
+  };
+  Object.entries(TFX).forEach(([k, w]) => { const [n, i] = k.split("."); D[n].tf[+i][2] = w; });
+  D[2].tf[8][0] = "Skor: 1 poin per kotak bersih per time step, tanpa penalti gerak. Agen vacuum yang NoOp setelah semua kotak bersih tetap rasional.";
+  D[2].tf[16][0] = "Skor: 1 poin per kotak bersih per time step, dengan penalti 1 poin tiap gerakan. Agen vacuum yang terus bergerak setelah semua kotak bersih bersifat irasional.";
+  D[3].tf[16] = ["BFS optimal bila semua biaya aksi sama (mis. semuanya 1).", true, "Benar. BFS memperluas node terdangkal dulu; bila biaya tiap aksi sama, jumlah langkah terkecil berarti biaya terkecil."];
+  D[4].tf[7] = ["A*: dua node di fringe sama-sama punya f(n)=8 dan soal tidak menyebut aturan seri. Maka satu node tertentu pasti diperluas berikutnya.", false, "Salah. Tanpa aturan seri (mis. FIFO atau alfabetis), kedua urutan sama-sama valid. Soal yang baik harus menyatakan aturan seri."];
+  D[5].tf[17] = ["Bila semua arc pada suatu CSP sudah konsisten, CSP itu pasti punya solusi.", false, "Salah. Arc consistency hanya menyaring nilai yang pasti gagal. Contoh: tiga wilayah saling bertetangga dengan hanya 2 warna; semua arc konsisten tetapi solusi tidak ada."];
+
+  /* --- B. Audit pilihan ganda: penjelasan tiap opsi (urutan opsi asli) --- */
+  const MCQD = {
+    "1.0": ["Ini masalah nyata: refleks menarik tangan dari api itu cerdas, tetapi bukan hasil penalaran logis.", "Ini masalah nyata: inferensi logis sering terlalu mahal dihitung (intractable).", "Ini masalah nyata: laws of thought mengabaikan masalah persepsi.", "KUNCI. Pernyataan ini keliru: logika justru ditulis dalam notasi formal, jadi ini bukan masalahnya."],
+    "1.1": ["Benar: learning adalah komponen keempat, selain knowledge, reasoning, dan language understanding.", "Salah: robotika bukan salah satu dari empat komponen Turing.", "Salah: penyimpanan data bukan komponen kecerdasan menurut Turing.", "Salah: jaringan tidak termasuk empat komponen Turing."],
+    "1.2": ["Termasuk cara: mengamati pikiran sendiri.", "Termasuk cara: eksperimen pada subjek manusia.", "Termasuk cara: mengamati otak saat bekerja.", "KUNCI (kecuali): Turing Test menilai perilaku, bukan cara manusia berpikir."],
+    "2.0": ["Benar: papan terlihat penuh, hasil langkah pasti, dan ada dua pemain.", "Salah: papan terlihat penuh dan tidak ada unsur acak.", "Salah: hasil langkah pasti (bukan stochastic) dan ada lawan (bukan single-agent).", "Salah: seluruh papan terlihat (bukan partially observable) dan ada lawan."],
+    "2.1": ["Salah: simple reflex hanya melihat persepsi sekarang, tanpa state internal.", "Benar: model-based menyimpan state internal tentang dunia.", "Salah: tanpa memori berarti tidak ada model internal.", "Salah: agen acak tidak memakai model dunia."],
+    "2.2": ["Salah: sensor taksi tidak melihat semua, dan lalu lintas terus berubah.", "Benar: partial (sensor terbatas), stochastic (lalu lintas tak pasti), dynamic (dunia terus bergerak).", "Salah: sensor tidak melihat semua, lalu lintas tak pasti, dan keputusan saling berkaitan (bukan episodic).", "Salah: lalu lintas tidak deterministik dan dunia terus bergerak (bukan static)."],
+    "3.0": ["Benar: DFS berulang dengan batas naik; memori seperti DFS, lengkap seperti BFS.", "Salah: greedy memakai heuristik dan tidak menjamin lengkap atau optimal.", "Salah: UCS lengkap tetapi memorinya besar seperti BFS.", "Salah: hill climbing adalah local search tanpa frontier."],
+    "3.1": ["Salah: DFS menemukan solusi 'paling kiri', bukan termurah.", "Benar: memori DFS hanya O(bm).", "Salah: DFS bisa tersangkut loop.", "Salah: waktu DFS O(b^m) bisa lebih buruk dari O(b^d)."],
+    "3.2": ["Benar: bila semua step cost sama, node dengan g(n) terkecil adalah node terdangkal.", "Salah: UCS tidak memakai heuristik.", "Salah: ukuran ruang state tidak mengubah urutan perluasan.", "Salah: jumlah cabang tidak menyamakan biaya; yang menentukan adalah step cost."],
+    "4.0": ["Benar: h=0 membuat f(n)=g(n), persis UCS.", "Salah: DFS memakai stack tanpa memperhitungkan biaya.", "Salah: hill climbing tidak punya fringe.", "Salah: greedy hanya memakai h; bila h=0 ia tak punya dasar pemilihan dan tidak memakai g."],
+    "4.1": ["Benar: tiap ubin salah tempat butuh minimal satu langkah, jadi tidak overestimate.", "Salah: dikali 10 membuat estimasi melebihi biaya sebenarnya.", "Salah: dua kali Manhattan bisa melebihi biaya sebenarnya.", "Salah: tidak berkaitan dengan jarak state ke goal."],
+    "4.2": ["Benar: greedy hanya melihat h(n), sehingga bisa menuju goal yang bukan jalur termurah.", "Salah: fringe greedy tetap disimpan, memorinya tidak konstan.", "Salah: greedy justru hanya memakai heuristik.", "Salah: tidak ada batasan jenis graf."],
+    "5.0": ["Benar: variabel dengan sisa nilai paling sedikit dipilih agar gagal cepat (fail-fast).", "Salah: itu kebalikan MRV.", "Salah: MRV bukan pemilihan acak.", "Salah: MRV melihat sisa nilai legal, bukan jumlah constraint."],
+    "5.1": ["Benar: tiap kolom adalah satu variabel dan nilainya adalah baris ratu.", "Salah: warna petak tidak relevan pada n-queens.", "Salah: jumlah ratu tetap, bukan variabel.", "Salah: langkah bukan variabel pada formulasi CSP."],
+    "6.0": ["Benar: De Morgan, negasi 'dan' menjadi 'atau' dari negasi masing-masing.", "Salah: ¬P ∧ ¬Q adalah hasil negasi dari P ∨ Q.", "Salah: tidak ada negasi sama sekali.", "Salah: implikasi bukan hasil negasi konjungsi."],
+    "6.1": ["Benar: implikasi hanya salah bila P benar dan Q salah, sama dengan ¬P ∨ Q.", "Salah: P ∨ ¬Q setara dengan Q → P (konvers).", "Salah: konjungsi benar hanya bila P salah dan Q benar, jauh lebih sempit.", "Salah: konvers tidak setara dengan implikasi."],
+    "6.2": ["Salah: 8 = 2³ untuk 3 simbol.", "Salah: bukan pangkat dua.", "Benar: 2⁴ = 16.", "Salah: 4 = 2² untuk 2 simbol."],
+    "7.0": ["Benar: 'ada' memakai ∃ dengan ∧.", "Salah: dengan → rumus benar hanya karena ada objek yang bukan mahasiswa.", "Salah: ∀ dengan ∧ berarti semua objek mahasiswa dan cum laude.", "Salah: ini berarti semua yang cum laude adalah mahasiswa; tidak menyatakan ada."],
+    "7.1": ["Benar: negasi 'semua' adalah 'ada yang tidak'.", "Salah: ∀x ¬P berarti tidak ada yang P, lebih kuat dari ¬∀x P.", "Salah: ∃x P tidak menyatakan ada yang tidak P.", "Salah: ¬∃x P setara dengan ∀x ¬P."],
+    "7.2": ["Benar: fungsi memetakan objek ke objek.", "Salah: fungsi bukan nilai kebenaran.", "Salah: fungsi punya argumen, mis. Ibu(x).", "Salah: fungsi menerima variabel dan term lain juga."]
+  };
+  Object.entries(MCQD).forEach(([k, d]) => { const [n, i] = k.split("."); D[n].mcq[+i].d = d; });
+  D[3].mcq[2].o[3] = "Branching factor 2";
+  D[2].mcq[0].q = "Lingkungan permainan catur dua pemain bergantian (tanpa jam) paling tepat disebut ...";
+
+  /* Pembahasan per opsi menggantikan penjelasan singkat lama bila tersedia */
+  const oq = window.drawQ;
+  window.drawQ = function () {
+    oq();
+    const s = run.steps[run.idx], c = run.cur; if (!c.checked || !s.x.d) return;
+    const b = $("app").querySelector(".qbox"); if (!b) return;
+    b.querySelectorAll(".xpl").forEach(e => e.remove());
+    const lt = ["A", "B", "C", "D", "E"];
+    b.insertAdjacentHTML("beforeend", `<div class="model xpl" style="margin-top:14px"><b>Mengapa tiap opsi benar atau salah</b>${s.shuf.map((oi, di) => `<div style="margin-top:8px"><b>${lt[di]}. ${esc(s.x.o[oi])}</b> ${oi === s.x.a ? "✓" : oi === c.pick ? "✗ (pilihanmu)" : "✗"}<br>${esc(s.x.d[oi])}</div>`).join("")}</div>`);
+  };
+
+  /* --- C. Penelusuran algoritme bertahap --- */
+  const TG = {
+    g1: { n: "Graf 1", E: { S: [["A", 2], ["B", 5]], A: [["G", 6]], B: [["G", 2]], G: [] }, H: { S: 6, A: 5, B: 2, G: 0 } },
+    g2: { n: "Graf 2 (seri pada g)", E: { S: [["A", 1], ["B", 1]], A: [["G", 4]], B: [["C", 1]], C: [["G", 1]], G: [] }, H: { S: 3, A: 3, B: 2, C: 1, G: 0 } },
+    g3: { n: "Graf 3 (seri pada f)", E: { S: [["A", 1], ["B", 2]], A: [["G", 5]], B: [["G", 3]], G: [] }, H: { S: 4, A: 3, B: 2, G: 0 } }
+  };
+  const RULE = { BFS: "Frontier FIFO: node yang paling lama menunggu dipilih.", DFS: "Frontier LIFO: node yang terakhir masuk dipilih. Successor dimasukkan terbalik agar yang alfabetis diperluas lebih dulu.", UCS: "Nilai = g(n). Nilai terkecil dipilih lebih dulu.", Greedy: "Nilai = h(n). Nilai terkecil dipilih lebih dulu.", "A*": "Nilai = f(n) = g(n) + h(n). Nilai terkecil dipilih lebih dulu." };
+  const KL = { BFS: "Nilai (urutan masuk)", DFS: "Nilai (urutan masuk)", UCS: "g (nilai)", Greedy: "h (nilai)", "A*": "f = g + h (nilai)" };
+  let TR = { g: "g2", a: "UCS", i: 0 };
+
+  function trSim(gk, alg) {
+    const g = TG[gk], E = g.E, H = g.H, fifo = alg === "BFS" || alg === "DFS";
+    const keyf = n => alg === "UCS" ? n.g : alg === "Greedy" ? H[n.p[n.p.length - 1]] : alg === "A*" ? n.g + H[n.p[n.p.length - 1]] : alg === "BFS" ? n.q : -n.q;
+    let fr = [{ p: ["S"], g: 0, q: 1 }], q = 2, closed = [], steps = [], ord = [];
+    const snap = () => fr.map(n => ({ p: n.p.join("→"), g: n.g, h: H[n.p[n.p.length - 1]], v: fifo ? n.q : keyf(n), q: n.q }));
+    while (fr.length) {
+      const before = snap(), mn = Math.min(...fr.map(keyf));
+      const tied = fr.filter(n => keyf(n) === mn).sort((a, b) => alg === "DFS" ? b.q - a.q : a.q - b.q);
+      const ch = tied[0]; fr = fr.filter(n => n !== ch);
+      const nm = ch.p[ch.p.length - 1];
+      const st = { before, mn: fifo ? ch.q : mn, tied: tied.map(n => n.p.join("→")), tiedq: tied.map(n => n.q), ch: ch.p.join("→"), chq: ch.q, g: ch.g, nm, added: [], skipped: false, goal: false };
+      if (closed.includes(nm)) { st.skipped = true; st.closed = [...closed]; st.after = snap(); steps.push(st); continue; }
+      ord.push(nm);
+      if (nm === "G") { st.goal = true; st.cost = ch.g; st.path = ch.p.join("→"); st.ord = [...ord]; st.closed = [...closed]; st.after = snap(); steps.push(st); break; }
+      closed.push(nm);
+      const ks = E[nm].slice(); if (alg === "DFS") ks.reverse();
+      ks.forEach(([c, w]) => { if (closed.includes(c)) { st.added.push(c + " dilewati (sudah diperluas)"); return; } const n = { p: [...ch.p, c], g: ch.g + w, q: q++ }; fr.push(n); st.added.push(n.p.join("→") + " (g=" + n.g + ")"); });
+      st.closed = [...closed]; st.after = snap(); steps.push(st);
+    }
+    return steps;
+  }
+  window.__trSim = trSim; /* dipakai untuk pengujian */
+
+  window.trace = function () {
+    run = null; dock(""); closeModal();
+    const st = trSim(TR.g, TR.a), N = st.length, i = Math.min(TR.i, N);
+    const g = TG[TR.g];
+    const head = `<div class="exam-bar"><div class="exam-top"><button class="btn-exit" onclick="home()">${ic("arrowL", 13)} Kembali</button><div class="exam-label">Penelusuran Algoritme</div></div></div>`;
+    const edges = Object.entries(g.E).flatMap(([a, l]) => l.map(([b, w]) => `${a}→${b} (${w})`)).join(", ");
+    const hs = Object.entries(g.H).map(([k, v]) => `h(${k})=${v}`).join(", ");
+    const tbl = s => `<table><tr><th>Path di frontier</th><th>g</th><th>h</th><th>${KL[TR.a]}</th><th>Masuk ke-</th></tr>${s.before.map(r => `<tr class="${r.q === s.chq ? "tr-sel" : s.tiedq.includes(r.q) ? "tr-tie" : ""}"><td>${r.p}</td><td>${r.g}</td><td>${r.h}</td><td>${r.v}</td><td>${r.q}</td></tr>`).join("")}</table>`;
+    const box = (t, h) => `<div class="trs"><b class="h">${t}</b>${h}</div>`;
+    let body;
+    if (i === 0) body = box("Kondisi awal", "Frontier berisi S (g=0). Belum ada node yang diperluas. Tekan Berikutnya untuk memulai.");
+    else {
+      const s = st[i - 1], opt = trSim(TR.g, "UCS").slice(-1)[0].cost;
+      body = box("1. Kandidat di frontier", tbl(s) + `<p class="kbd" style="text-align:left">Baris hijau = dipilih; baris kuning = seri dengan yang dipilih.</p>`)
+        + box("2. Aturan pemilihan", `${RULE[TR.a]} ${s.tied.length > 1 ? `Terjadi seri pada nilai ${s.mn}: ${s.tied.join(" dan ")}. Aturan seri: pilih yang lebih dulu masuk frontier, yaitu ${s.ch}.` : `Tidak ada seri; terpilih ${s.ch}.`}`)
+        + box("3. Langkah yang dipilih", s.skipped ? `${s.ch} dikeluarkan, tetapi ${s.nm} sudah diperluas, jadi dilewati.` : s.goal ? `${s.ch} dikeluarkan dan ${s.nm} adalah goal. Berhenti (goal test dilakukan saat dequeue).` : `Perluas ${s.nm} lewat path ${s.ch} (g=${s.g}).`)
+        + box("4. Perubahan frontier", `${s.added.length ? "Masuk: " + s.added.join("; ") + "." : "Tidak ada node baru."} Frontier sekarang: ${s.after.length ? s.after.map(r => r.p).join(", ") : "kosong"}. Sudah diperluas: ${s.closed.join(", ") || "-"}.`)
+        + (s.goal ? `<div class="vdone">Hasil: path ${s.path}, biaya ${s.cost}. Urutan perluasan: ${s.ord.join(", ")}. ${s.cost === opt ? "Ini biaya termurah." : "Bukan yang termurah (UCS menemukan biaya " + opt + ")."}</div>` : "");
+    }
+    $("app").innerHTML = head + `<div class="qbox vz"><p class="qhint">${ic("info", 13)} Pilih graf dan algoritme, lalu telusuri satu langkah per satu langkah.</p>
+      <div class="row">${Object.keys(TG).map(k => `<button class="${TR.g === k ? "on" : ""}" onclick="TRset('g','${k}')">${TG[k].n}</button>`).join("")}</div>
+      <div class="row">${["BFS", "DFS", "UCS", "Greedy", "A*"].map(a => `<button class="${TR.a === a ? "on" : ""}" onclick="TRset('a','${a}')">${a}</button>`).join("")}</div>
+      <div class="note">Busur: ${edges}. Heuristik: ${hs}. Start S, goal G. Successor dimasukkan urut alfabetis. Seri: node yang lebih dulu masuk frontier. State yang sudah diperluas tidak diperluas lagi.</div>
+      <p class="qnum" style="margin:8px 0">Langkah ${i} dari ${N}</p>${body}
+      <div class="row"><button onclick="TRgo(-1)" ${i <= 0 ? "disabled" : ""}>Mundur</button><button class="${i >= N ? "" : "on"}" ${i >= N ? "disabled" : ""} onclick="TRgo(1)">${i >= N ? "Selesai ✓" : "Berikutnya"}</button><button onclick="TR_i(0)">Ulang</button><button onclick="TR_i(${N})">Ke hasil</button></div></div>`;
+    window.scrollTo(0, 0);
+  };
+  window.TRset = (k, v) => { TR[k] = v; TR.i = 0; trace(); };
+  window.TRgo = d => { TR.i = Math.max(0, TR.i + d); trace(); };
+  window.TR_i = v => { TR.i = v; trace(); };
+
+  /* Kartu "Penelusuran algoritme" di beranda */
+  const oh = window.home;
+  window.home = function () {
+    oh();
+    const t = document.querySelector(".tools3");
+    if (t && !t.querySelector("[data-trace]")) t.insertAdjacentHTML("beforeend", `<button class="tc" data-trace="1" onclick="trace()"><span class="tc-ic">${ic("clip", 22)}</span><b>Penelusuran algoritme</b><small>Langkah demi langkah, termasuk aturan seri</small></button>`);
+  };
+
+  /* --- D. Rangkuman terstruktur sebagai tampilan utama; materi lama dilipat --- */
+  const SS = {
+    1: { inti: ["AI mempelajari entitas cerdas; ada 4 pendekatan: thinking/acting × humanly/rationally.", "Acting humanly diuji dengan Turing Test (1950); mesin butuh knowledge, reasoning, language understanding, learning.", "Thinking rationally (laws of thought) berbasis logika, tetapi punya 3 keterbatasan.", "Acting rationally: rational agent memaksimalkan pencapaian tujuan; ini pilihan buku acuan.", "Etika AI: bias, privasi, lingkungan, dengan banyak stakeholder."], rumus: [["Nilai akhir = Σ (nilai × bobot)", "nilai tiap komponen dikali bobotnya, lalu dijumlahkan", "80×0,3 + 70×0,3 + 90×0,1 + 85×0,1 + 75×0,2 = 77,5"], ["Hadir minimum = ⌈0,8 × jumlah pertemuan⌉", "⌈ ⌉ = pembulatan ke atas", "0,8 × 14 = 11,2 → 12 kali"]], e: ["Jangan tertukar: introspeksi, eksperimen psikologi, dan brain imaging mempelajari cara manusia berpikir; Turing Test menguji perilaku."] },
+    2: { inti: ["Agent mempersepsi lewat sensor dan bertindak lewat actuator.", "Agent function f: P* → A memetakan riwayat persepsi ke aksi; agent program mewujudkannya.", "Rasional = memaksimalkan kinerja yang diharapkan, bukan sempurna.", "PEAS dan jenis environment dipakai untuk mendeskripsikan masalah.", "Lima tipe agen: simple reflex, model-based, goal-based, utility-based, learning."], rumus: [["f: P* → A", "P* = riwayat persepsi, A = aksi", "[A,Dirty] → Suck"], ["Jumlah state vacuum = 2^(jumlah kotak) × lokasi agen", "tiap kotak bersih atau kotor", "2² × 2 = 8"], ["Skor = Σ poin tiap time step − penalti", "bergantung pada performance measure yang ditetapkan", "2 kotak bersih, 5 step, +1 per kotak per step: 10"]], e: [] },
+    3: { inti: ["Search problem: state space, successor function, start state, goal test; solusi berupa plan.", "State space graph: tiap state sekali; search tree: tiap node = path utuh.", "BFS (FIFO) dan DFS (LIFO) berbeda pada urutan perluasan, memori, dan optimalitas.", "UCS memakai priority queue berdasar g(n); sama dengan BFS bila semua biaya sama.", "IDS = DFS berulang dengan batas kedalaman naik."], rumus: [["Node pohon penuh = 1 + b + b² + … + b^m", "b = branching factor, m = kedalaman maksimum", "b=3, m=2: 1+3+9 = 13"], ["BFS: waktu dan ruang O(b^s)", "s = kedalaman solusi terdangkal", "b=10, s=3: 1000 node"], ["DFS: waktu O(b^m), ruang O(bm)", "m = kedalaman maksimum", "b=2, m=3: ruang sekitar 6 node"], ["State eat-all-dots = posisi × 2^(jumlah dot)", "tiap dot sudah atau belum dimakan", "120 × 2³ = 960"]], e: [] },
+    4: { inti: ["Heuristik h(n) mengestimasi jarak state n ke goal.", "UCS: g(n); Greedy: h(n); A*: f(n) = g(n) + h(n).", "A* berhenti saat goal di-dequeue, bukan di-enqueue.", "Heuristik admissible (tidak overestimate) menjaga A* tetap optimal.", "Heuristik dirancang lewat relaxed problem."], rumus: [["f(n) = g(n) + h(n)", "g = biaya dari start ke n, h = estimasi n ke goal", "g=4, h=3 → f=7"], ["Admissible: 0 ≤ h(n) ≤ h*(n)", "h* = biaya sebenarnya ke goal terdekat", "h*=6: h=5 boleh, h=9 tidak"], ["Aturan seri (wajib dinyatakan)", "bila nilai sama, pakai aturan di soal, mis. FIFO", "f(P)=f(Q)=8, P masuk lebih dulu → P"]], e: [] },
+    5: { inti: ["CSP = variabel, domain, constraint; yang dicari assignment akhir, bukan path.", "Backtracking = DFS + satu variabel per langkah + cek constraint sambil jalan.", "Filtering: forward checking dan arc consistency.", "Ordering: MRV (memilih variabel) dan LCV (memilih nilai).", "Struktur graph, mis. subproblem independen, mempercepat pencarian."], rumus: [["Complete assignment tanpa constraint = d^n", "d = ukuran domain, n = jumlah variabel", "3⁷ = 2187"], ["Arc consistency O(n²d³)", "n variabel, d ukuran domain", "n=10, d=3: 100 × 27 = 2700"], ["Arc X→Y konsisten", "tiap x di tail punya minimal satu y di head yang cocok", "X > Y, Y ∈ {1,2}: hapus x=1 dari X"]], e: [] },
+    6: { inti: ["Knowledge base = kalimat formal; agen memakai Tell dan Ask.", "Entailment: KB ⊨ α bila α benar di semua model tempat KB benar.", "Sound = hanya menurunkan yang ter-entail; complete = menurunkan semuanya.", "Valid, satisfiable, dan unsatisfiable menggolongkan kalimat.", "Truth table eksponensial; propositional logic kurang ekspresif sehingga lahir FOL."], rumus: [["Baris truth table = 2^n", "n = jumlah simbol", "3 simbol → 8 baris"], ["P ⇒ Q ≡ ¬P ∨ Q", "salah hanya bila P=T dan Q=F", "P=T, Q=F → salah"], ["¬(P ∧ Q) ≡ ¬P ∨ ¬Q", "De Morgan", "¬(A ∧ B) benar saat A=F"], ["KB ⊨ α ⇔ (KB ∧ ¬α) unsatisfiable", "dasar pembuktian dengan kontradiksi", "KB ∧ ¬α mustahil dipenuhi → α pasti mengikuti"]], e: [] },
+    7: { inti: ["FOL menambah objek, relasi, dan quantifier dibanding propositional logic.", "Term: constant, variable, function; predicate menghasilkan benar/salah.", "∀ berpasangan dengan ⇒; ∃ berpasangan dengan ∧.", "Urutan quantifier campuran mengubah makna.", "Negasi quantifier dan ekuivalensi dipakai untuk menyederhanakan."], rumus: [["∀x (P(x) ⇒ Q(x))", "semua yang P juga Q", "Semua mahasiswa genius"], ["∃x (P(x) ∧ Q(x))", "ada yang P sekaligus Q", "Ada mahasiswa yang pintar"], ["¬∀x P ≡ ∃x ¬P ; ¬∃x P ≡ ∀x ¬P", "negasi quantifier", "Tidak semua lulus ≡ ada yang tidak lulus"], ["Cek ∀x∀y pada n objek", "n × n pasangan", "3 objek → 9 pasangan"]], e: [] }
+  };
+
+  const os2 = window.study;
+  window.study = function (n, tab) {
+    os2(n, tab);
+    if (tab && tab !== "s") return;
+    const X = SS[n], R = window.RS && window.RS[n]; if (!X || !R) return;
+    const app = $("app"), head = app.firstElementChild.outerHTML, G = GUIDE[n] || [];
+    const rd = (S.read || {}), cnt = G.filter((_, i) => rd[n + "-" + i]).length;
+    const ul = (x, t) => `<${t || "ul"} class="sumlist">${x.map(y => `<li>${esc(y)}</li>`).join("")}</${t || "ul"}>`;
+    const detail = G.map((g, i) => `<details class="gd"><summary><span class="gn ${rd[n + "-" + i] ? "dn" : ""}" id="gn${i}">${rd[n + "-" + i] ? "✓" : i + 1}</span><span class="gt">${esc(g[0])}</span>${ic("chev", 13)}</summary><div class="gb">${gBody(g[1])}${g[2] ? `<div class="gx"><b>Contoh</b>${fmtG(g[2])}</div>` : ""}<label class="rdl"><input type="checkbox" ${rd[n + "-" + i] ? "checked" : ""} onchange="markRead('${n}',${i},this.checked,${G.length})"> Saya sudah paham konsep ini</label></div></details>`).join("");
+    app.innerHTML = head + `<div class="qbox cs">
+      <h3>A. Inti bab</h3>${ul(X.inti)}
+      <h3>B. Konsep yang wajib dibedakan</h3><table><tr><th>Konsep</th><th>Ciri utama</th><th>Pembeda</th></tr>${R.t.map(r => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</table>
+      <h3>C. Cara menentukan jawaban</h3>${ul(R.a, "ol")}
+      <h3>D. Rumus dan aturan penting</h3><table><tr><th>Rumus</th><th>Arti simbol / kondisi</th><th>Contoh</th></tr>${X.rumus.map(r => `<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("")}</table>
+      <h3>E. Kesalahan yang sering terjadi</h3>${ul([...R.e, ...X.e])}
+      <h3>F. Mini recap</h3>${ul(D[n].sum.slice(0, 5))}
+    </div><details class="gd"><summary><span class="gn">+</span><span class="gt">Penjelasan rinci per konsep (materi lengkap)</span>${ic("chev", 13)}</summary><div class="gb"><div class="gprog-t"><b id="gpt">${cnt} dari ${G.length} konsep sudah dipahami</b></div><div class="pbar"><i id="gpb" style="width:${G.length ? cnt / G.length * 100 : 0}%"></i></div><div style="height:10px"></div>${detail}</div></details>`;
+    window.scrollTo(0, 0);
+  };
+  home();
+})();
