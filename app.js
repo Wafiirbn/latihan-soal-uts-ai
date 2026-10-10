@@ -126,7 +126,6 @@ const GUIDE = {"1": [["Empat pendekatan AI: peta 2×2", "Bayangkan tabel: baris 
   <div class="tools3">
     <button class="tc" onclick="cheat()"><span class="tc-ic">${ic("list", 22)}</span><b>Cheat sheet rumus</b><small>Rumus, ekuivalensi, truth table</small></button>
     <button class="tc" onclick="viz()"><span class="tc-ic">${ic("grid", 22)}</span><b>Visualisasi interaktif</b><small>Simulasi search dan ∀ vs ∃</small></button>
-    <button class="tc" onclick="wbCards()"><span class="tc-ic">${ic("refresh", 22)}</span><b>Flashcard soal salah</b><small>${(S.wb || []).length} kartu untuk diulang</small></button>
   </div>
   <div style="height:14px"></div>
   <div class="sec-hdr">
@@ -519,10 +518,6 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
 
     function pick(n) {
       $("modal").innerHTML = `<div class="modal-bg" onclick="closeModal()"><div class="modal-box" style="max-width:380px" onclick="event.stopPropagation()"><h3 style="font-weight:800;margin-bottom:4px">${esc(DATA[n].title)}</h3><p class="modal-hint">Mau mulai dari mana?</p><div class="pickl"><button class="btn-s" onclick="study('${n}','s')">${ic("book", 14)} Baca overview dulu</button><button class="btn-s" onclick="study('${n}','f')">${ic("clip", 14)} Flashcard dulu</button><button class="btn-p" onclick="closeModal();start('${n}')">Langsung kerjakan ${ic("arrow", 15)}</button></div></div></div>`;
-    }
-    function wbCards() {
-      const w = S.wb || []; if (!w.length) return alert("Belum ada soal yang salah. Kerjakan satu bab dulu.");
-      run = null; dock(""); FC = { head: `<div class="exam-bar"><div class="exam-top"><button class="btn-exit" onclick="home()">${ic("arrowL", 13)} Kembali</button><div class="exam-label">Flashcard Soal yang Pernah Salah</div></div></div>`, cards: w.map(x => [x.q, x.a]), i: 0, f: false }; fc();
     }
     let TM = null;
     function stopTimer() { clearInterval(TM); const e = $("tmr"); if (e) e.style.display = "none"; }
@@ -1004,6 +999,37 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
     const k = FC.cards[FC.i], back = FC.f, txt = back ? k[1] : k[0], long = back && String(txt).length > 120;
     $("app").innerHTML = FC.head + `<div class="qnum" style="text-align:center;margin-bottom:8px">${FC.i + 1} / ${FC.cards.length}${k[2] ? " · " + esc(k[2]) : ""}</div><div class="fcard ${back ? "back" : ""}" onclick="FC.f=!FC.f;fc()"><small>${back ? "Jawaban" : "Ketuk untuk membalik"}</small><p style="${long ? "width:100%;text-align:left;font-size:.98rem;font-weight:500;line-height:1.65" : ""}">${fmtG(txt)}</p></div>`;
     dock(`<button class="btn-s" onclick="fcGo(-1)">${ic("arrowL", 13)} Sebelumnya</button><button class="btn-p" onclick="fcGo(1)">Berikutnya ${ic("arrow", 15)}</button>`);
+  };
+
+  /* --- F. Pengaturan timer sebelum latihan --- */
+  window.startTimer = function (sec) {
+    stopTimer(); let el = $("tmr"); if (!el) { el = document.createElement("div"); el.id = "tmr"; el.className = "tmr"; document.body.appendChild(el); }
+    el.style.display = "block"; const end = Date.now() + sec * 1000;
+    const tick = () => { const r = Math.max(0, Math.round((end - Date.now()) / 1000)); el.textContent = "Sisa " + Math.floor(r / 60) + ":" + String(r % 60).padStart(2, "0"); return r; };
+    tick();
+    TM = setInterval(() => { if (tick() <= 0) { stopTimer(); if (run) { alert("Waktu habis. Latihan diakhiri dan hasil ditampilkan."); result(); } } }, 1000);
+  };
+  const os3 = window.start;
+  let TS = null;
+  window.start = function (n) {
+    if (n === "U" || !DATA[n]) return os3(n);
+    TS = { n, m: typeof S.tm === "number" ? S.tm : 0 }; drawTS();
+  };
+  function drawTS() {
+    const P = [0, 10, 15, 20, 30, 45, 60];
+    const chip = m => `<button class="btn-s" style="justify-content:center;${TS.m === m ? "background:var(--blue);color:#fff;border-color:var(--blue)" : ""}" onclick="TSpick(${m})">${m ? m + " menit" : "Tanpa timer"}</button>`;
+    $("modal").innerHTML = `<div class="modal-bg" onclick="closeModal()"><div class="modal-box" style="max-width:380px" onclick="event.stopPropagation()">
+      <h3 style="font-weight:800;margin-bottom:4px">${esc(DATA[TS.n].title)}</h3>
+      <p class="modal-hint">Atur waktu latihan. Saat waktu habis, latihan berakhir dan hasilnya ditampilkan.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0">${P.map(chip).join("")}</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--ink3);flex-wrap:wrap">Atau atur sendiri:<input id="tmcus" type="number" min="1" max="240" inputmode="numeric" placeholder="mis. 25" value="${P.includes(TS.m) ? "" : TS.m}" style="width:84px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit">menit</label>
+      <div class="pickl" style="margin-top:16px"><button class="btn-p" onclick="TSgo()">Mulai ${ic("arrow", 15)}</button></div></div></div>`;
+  }
+  window.TSpick = m => { TS.m = m; drawTS(); };
+  window.TSgo = () => {
+    const v = parseInt(($("tmcus") || {}).value, 10), m = v > 0 ? Math.min(v, 240) : TS.m, n = TS.n;
+    S.tm = m; save(); closeModal(); os3(n);
+    if (m > 0) startTimer(m * 60); else stopTimer();
   };
 
   const os2 = window.study;
