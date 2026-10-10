@@ -992,9 +992,24 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
     7: { inti: ["FOL menambah objek, relasi, dan quantifier dibanding propositional logic.", "Term: constant, variable, function; predicate menghasilkan benar/salah.", "∀ berpasangan dengan ⇒; ∃ berpasangan dengan ∧.", "Urutan quantifier campuran mengubah makna.", "Negasi quantifier dan ekuivalensi dipakai untuk menyederhanakan."], rumus: [["∀x (P(x) ⇒ Q(x))", "semua yang P juga Q", "Semua mahasiswa genius"], ["∃x (P(x) ∧ Q(x))", "ada yang P sekaligus Q", "Ada mahasiswa yang pintar"], ["¬∀x P ≡ ∃x ¬P ; ¬∃x P ≡ ∀x ¬P", "negasi quantifier", "Tidak semua lulus ≡ ada yang tidak lulus"], ["Cek ∀x∀y pada n objek", "n × n pasangan", "3 objek → 9 pasangan"]], e: [] }
   };
 
+  /* --- E. Flashcard konsep (recall materi), bukan soal --- */
+  function cardsFor(n) {
+    const X = SS[n], R = window.RS && window.RS[n], G = GUIDE[n] || [], out = [];
+    G.forEach(g => out.push(["Jelaskan dengan kata-katamu:\n**" + g[0] + "**", g[1] + (g[2] ? "\n\n**Contoh:** " + g[2] : ""), "Konsep"]));
+    if (R) R.t.forEach(r => out.push(["**" + r[0] + "**\nApa ciri utamanya, dan apa yang membedakannya?", "**Ciri:** " + r[1] + "\n**Pembeda:** " + r[2], "Pembeda konsep"]));
+    if (X) X.rumus.forEach(r => out.push(["Apa arti simbol dan contoh pemakaian:\n**" + r[0] + "**", r[1] + "\n\n**Contoh:** " + r[2], "Rumus"]));
+    return out;
+  }
+  window.fc = function () {
+    const k = FC.cards[FC.i], back = FC.f, txt = back ? k[1] : k[0], long = back && String(txt).length > 120;
+    $("app").innerHTML = FC.head + `<div class="qnum" style="text-align:center;margin-bottom:8px">${FC.i + 1} / ${FC.cards.length}${k[2] ? " · " + esc(k[2]) : ""}</div><div class="fcard ${back ? "back" : ""}" onclick="FC.f=!FC.f;fc()"><small>${back ? "Jawaban" : "Ketuk untuk membalik"}</small><p style="${long ? "width:100%;text-align:left;font-size:.98rem;font-weight:500;line-height:1.65" : ""}">${fmtG(txt)}</p></div>`;
+    dock(`<button class="btn-s" onclick="fcGo(-1)">${ic("arrowL", 13)} Sebelumnya</button><button class="btn-p" onclick="fcGo(1)">Berikutnya ${ic("arrow", 15)}</button>`);
+  };
+
   const os2 = window.study;
   window.study = function (n, tab) {
     os2(n, tab);
+    if (tab === "f") { const cs = cardsFor(n); if (cs.length) { FC.cards = cs; FC.i = 0; FC.f = false; fc(); } return; }
     if (tab && tab !== "s") return;
     const X = SS[n], R = window.RS && window.RS[n]; if (!X || !R) return;
     const app = $("app"), head = app.firstElementChild.outerHTML, G = GUIDE[n] || [];
