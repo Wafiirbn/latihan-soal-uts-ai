@@ -931,10 +931,14 @@ const fmtG=s=>esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\n/g,"<br>")
     const g = TG[gk], P = POS[gk], R = 21; let e = "", nd = "";
     Object.entries(g.E).forEach(([a, l]) => l.forEach(([b, w]) => {
       const [x1, y1] = P[a], [x2, y2] = P[b], L = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L, uy = (y2 - y1) / L;
-      e += `<line x1="${x1 + ux * R}" y1="${y1 + uy * R}" x2="${x2 - ux * (R + 4)}" y2="${y2 - uy * (R + 4)}" marker-end="url(#ar)"/><text class="gw" x="${(x1 + x2) / 2 - uy * 12}" y="${(y1 + y2) / 2 + ux * 12 + 4}">${w}</text>`;
+      e += `<line x1="${x1 + ux * R}" y1="${y1 + uy * R}" x2="${x2 - ux * (R + 4)}" y2="${y2 - uy * (R + 4)}" marker-end="url(#ar)" style="stroke:var(--ink3);stroke-width:1.5;fill:none"/><text x="${(x1 + x2) / 2 - uy * 12}" y="${(y1 + y2) / 2 + ux * 12 + 4}" text-anchor="middle" style="font-size:12px;font-weight:800;fill:var(--ink)">${w}</text>`;
     }));
-    Object.keys(P).forEach(k => { const [x, y] = P[k]; nd += `<circle cx="${x}" cy="${y}" r="${R}" class="${closed.includes(k) ? "cl" : ""} ${cur === k ? "cu" : ""}"/><text class="gl" x="${x}" y="${y - 2}">${k}</text><text class="gh" x="${x}" y="${y + 12}">h=${g.H[k]}</text>`; });
-    return `<svg viewBox="0 0 360 170" role="img" aria-label="Graf pencarian"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>${e}${nd}</svg>`;
+    Object.keys(P).forEach(k => {
+      const [x, y] = P[k], isC = closed.includes(k), isCur = cur === k;
+      const fill = isC ? "var(--blue-soft)" : "var(--card)", stroke = isCur ? "var(--ok)" : "var(--ink3)", sw = isCur ? 3.5 : 1.5;
+      nd += `<circle cx="${x}" cy="${y}" r="${R}" style="fill:${fill};stroke:${stroke};stroke-width:${sw}"/><text x="${x}" y="${y - 2}" text-anchor="middle" style="font-size:14px;font-weight:800;fill:var(--ink)">${k}</text><text x="${x}" y="${y + 12}" text-anchor="middle" style="font-size:10px;fill:var(--ink3)">h=${g.H[k]}</text>`;
+    });
+    return `<svg viewBox="0 0 360 170" role="img" aria-label="Graf pencarian"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--ink3)"/></marker></defs>${e}${nd}</svg>`;
   }
   window.trace = function () {
     run = null; dock(""); closeModal();
